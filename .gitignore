@@ -2,3 +2,4 @@ node_modules
 bin
 dist
 target
+server/src/words_alpha.txt
