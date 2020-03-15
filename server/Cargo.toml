@@ -1,0 +1,12 @@
+[package]
+name = "server"
+version = "0.1.0"
+authors = ["Celeo <celeodor@gmail.com>"]
+edition = "2018"
+
+[dependencies]
+lazy_static = "1.4.0"
+pretty_env_logger = "0.4.0"
+warp = "0.2.2"
+# serde = { version = "1.0.104", features = ["derive"] }
+tokio = { version = "0.2.13", features = ["macros"] }
