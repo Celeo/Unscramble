@@ -3,3 +3,4 @@ bin
 dist
 target
 server/src/words_alpha.txt
+elm-stuff
