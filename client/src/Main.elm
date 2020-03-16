@@ -1,7 +1,7 @@
 module Main exposing (main)
 
 import Browser
-import Html exposing (Html, button, div, hr, input, p, text)
+import Html exposing (Html, button, div, hr, input, li, p, text, ul)
 import Html.Attributes exposing (placeholder, value)
 import Html.Events exposing (onClick, onInput)
 import Http
@@ -38,7 +38,7 @@ init _ =
 type Msg
     = SetWord String
     | SearchForMatches
-    | DataReceived (Result Http.Error String)
+    | DataReceived (Result Http.Error (List String))
 
 
 url : String
@@ -53,14 +53,12 @@ update msg model =
             ( { model | word = value }, Cmd.none )
 
         SearchForMatches ->
-            ( model, Http.get { url = url ++ model.word, expect = Http.expectString DataReceived } )
+            ( model, Http.get { url = url ++ model.word, expect = Http.expectJson DataReceived matchesDecoder } )
 
         DataReceived result ->
             case result of
                 Ok data ->
-                    -- ( { model | word = data }, Cmd.none )
-                    -- TODO need to use the JSON decoder here
-                    ( model, Cmd.none )
+                    ( { model | matches = data }, Cmd.none )
 
                 Err _ ->
                     ( { model | errorMessage = Just "Could not get data from server" }, Cmd.none )
@@ -73,5 +71,17 @@ view model =
         , input [ placeholder "Letters to unscramble", value model.word, onInput SetWord ] []
         , button [ onClick SearchForMatches ] [ text "Search" ]
         , hr [] []
-        , p [] [ text ("Matches: " ++ Debug.toString model.matches) ]
+        , p []
+            [ text "Matches"
+            , ul []
+                (List.map
+                    (\val -> li [] [ text val ])
+                    model.matches
+                )
+            ]
         ]
+
+
+matchesDecoder : Decoder (List String)
+matchesDecoder =
+    field "matches" (list string)
