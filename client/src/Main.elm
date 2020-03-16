@@ -1,8 +1,8 @@
 module Main exposing (main)
 
 import Browser
-import Html exposing (Html, button, div, hr, input, li, p, text, ul)
-import Html.Attributes exposing (placeholder, value)
+import Html exposing (Html, button, div, h3, h4, hr, i, input, li, p, text, ul)
+import Html.Attributes exposing (class, placeholder, value)
 import Html.Events exposing (onClick, onInput)
 import Http
 import Json.Decode exposing (Decoder, field, list, string)
@@ -66,16 +66,22 @@ update msg model =
 
 view : Model -> Html Msg
 view model =
-    div []
-        [ p [] [ text ("Current word: " ++ model.word) ]
-        , input [ placeholder "Letters to unscramble", value model.word, onInput SetWord ] []
-        , button [ onClick SearchForMatches ] [ text "Search" ]
+    div [ class "container" ]
+        [ h3 [] [ text "Word Unscrambler" ]
+        , div [ class "row" ]
+            [ div [ class "col s12" ]
+                [ div [ class "input-field" ]
+                    [ input [ placeholder "Letters to unscramble", value model.word, onInput SetWord ] []
+                    ]
+                ]
+            ]
+        , div [ class "row" ] [ div [ class "col" ] [ button [ class "btn blue darken-1", onClick SearchForMatches ] [ i [ class "material-icons right" ] [ text "send" ], text "Search" ] ] ]
         , hr [] []
+        , h4 [] [ text "Matches" ]
         , p []
-            [ text "Matches"
-            , ul []
+            [ ul [ class "collection" ]
                 (List.map
-                    (\val -> li [] [ text val ])
+                    (\val -> li [ class "collection-item" ] [ text val ])
                     model.matches
                 )
             ]
