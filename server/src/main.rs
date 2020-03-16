@@ -10,11 +10,17 @@ static _WORD_FILE_CONTENT: &str = include_str!("words_alpha.txt");
 
 lazy_static! {
     // Parse the English word list string into a map of sorted word to original word.
-    static ref WORD_LOOKUP: HashMap<String, String> = {
+    static ref WORD_LOOKUP: HashMap<String, Vec<String>> = {
         let word_list: Vec<&str> = _WORD_FILE_CONTENT.split_whitespace().collect();
-        let mut map = HashMap::new();
+        let mut map: HashMap<String, Vec<String>> = HashMap::new();
         word_list.iter().for_each(|&word| {
-            map.insert(insertsort(word), word.to_owned());
+            let owned = word.to_owned();
+            let sorted = insertsort(&owned);
+            if let Some(existing) = map.get_mut(&sorted) {
+                existing.push(owned);
+            } else {
+                map.insert(sorted, vec![owned]);
+            }
         });
         map
     };
@@ -25,17 +31,22 @@ lazy_static! {
 struct SearchResponse {
     original: String,
     sorted: String,
-    matches: Option<String>,
+    matches: Vec<String>,
 }
 
 impl SearchResponse {
     /// Create a new response struct, processing the string.
-    fn new(word: &str) -> Self {
-        let sorted = insertsort(word);
-        SearchResponse {
-            original: word.to_owned(),
-            sorted: sorted.clone(),
-            matches: WORD_LOOKUP.get(&sorted).map(|s| s.to_owned()),
+    fn new(original: &str) -> Self {
+        let original = original.to_owned();
+        let sorted = insertsort(&original);
+        let matches = match WORD_LOOKUP.get(&sorted) {
+            Some(s) => s.to_owned(),
+            None => vec![],
+        };
+        Self {
+            original,
+            sorted,
+            matches,
         }
     }
 }
