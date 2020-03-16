@@ -58,7 +58,7 @@ update msg model =
         DataReceived result ->
             case result of
                 Ok data ->
-                    ( { model | matches = data }, Cmd.none )
+                    ( { model | matches = data, errorMessage = Nothing }, Cmd.none )
 
                 Err _ ->
                     ( { model | errorMessage = Just "Could not get data from server" }, Cmd.none )
