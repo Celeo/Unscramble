@@ -3,7 +3,7 @@ use std::{collections::HashMap, env};
 use lazy_static::lazy_static;
 use serde::Serialize;
 use stringsort::insertsort;
-use warp::{self, filters::BoxedFilter, Filter};
+use warp::{self, filters::BoxedFilter, http::Method, Filter};
 
 // Include the English words in the binary.
 static _WORD_FILE_CONTENT: &str = include_str!("words_alpha.txt");
@@ -57,6 +57,7 @@ fn route_search() -> BoxedFilter<(impl warp::Reply,)> {
         .and(warp::path("word"))
         .and(warp::path::param())
         .and_then(handle_search)
+        .with(warp::cors().allow_methods(&[Method::GET]))
         .boxed()
 }
 
