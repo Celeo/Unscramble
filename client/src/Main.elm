@@ -2,7 +2,7 @@ module Main exposing (main)
 
 import Browser
 import Html exposing (Html, button, div, h3, h4, hr, i, input, li, p, text, ul)
-import Html.Attributes exposing (class, placeholder, value)
+import Html.Attributes exposing (class, disabled, placeholder, value)
 import Html.Events exposing (onClick, onInput)
 import Http
 import Json.Decode exposing (Decoder, field, list, string)
@@ -22,6 +22,7 @@ type alias Model =
     { word : String
     , matches : List String
     , errorMessage : Maybe String
+    , waitingForResponse : Bool
     }
 
 
@@ -30,6 +31,7 @@ init _ =
     ( { word = ""
       , matches = []
       , errorMessage = Nothing
+      , waitingForResponse = False
       }
     , Cmd.none
     )
@@ -53,15 +55,15 @@ update msg model =
             ( { model | word = value }, Cmd.none )
 
         SearchForMatches ->
-            ( model, Http.get { url = url ++ model.word, expect = Http.expectJson DataReceived matchesDecoder } )
+            ( { model | waitingForResponse = True }, Http.get { url = url ++ model.word, expect = Http.expectJson DataReceived matchesDecoder } )
 
         DataReceived result ->
             case result of
                 Ok data ->
-                    ( { model | matches = data, errorMessage = Nothing }, Cmd.none )
+                    ( { model | matches = data, errorMessage = Nothing, waitingForResponse = False }, Cmd.none )
 
                 Err _ ->
-                    ( { model | errorMessage = Just "Could not get data from server" }, Cmd.none )
+                    ( { model | errorMessage = Just "Could not get data from server", waitingForResponse = False }, Cmd.none )
 
 
 view : Model -> Html Msg
@@ -75,7 +77,30 @@ view model =
                     ]
                 ]
             ]
-        , div [ class "row" ] [ div [ class "col" ] [ button [ class "btn blue darken-1", onClick SearchForMatches ] [ i [ class "material-icons right" ] [ text "send" ], text "Search" ] ] ]
+        , div [ class "row" ]
+            [ div [ class "col" ]
+                [ button [ class "btn blue darken-1", onClick SearchForMatches, disabled model.waitingForResponse ] [ i [ class "material-icons right" ] [ text "send" ], text "Search" ]
+                ]
+            , div [ class "col" ]
+                [ div
+                    [ class
+                        ("preloader-wrapper"
+                            ++ (if model.waitingForResponse then
+                                    " active"
+
+                                else
+                                    ""
+                               )
+                        )
+                    ]
+                    [ div [ class "spinner-layer spinner-blue-only" ]
+                        [ div [ class "circle-clipper left" ] [ div [ class "circle" ] [] ]
+                        , div [ class "gap-patch" ] [ div [ class "circle" ] [] ]
+                        , div [ class "circle-clipper right" ] []
+                        ]
+                    ]
+                ]
+            ]
         , hr [] []
         , h4 [] [ text "Matches" ]
         , p []
